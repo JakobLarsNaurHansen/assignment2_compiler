@@ -9,9 +9,6 @@ class Environment {
     public Environment() {
     }
 
-    private Environment(Environment env) {
-        this.values = new HashMap<>(env.values);
-    }
 
     public void setVariable(String name, Boolean value) {
         values.put(name, value);
