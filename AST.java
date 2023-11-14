@@ -172,7 +172,7 @@ class Circuit extends AST{
             }
         }
 
-        // Initialize all latches
+
         for (Latch latch : latches) {
             latch.initialize(env);
         }
@@ -180,12 +180,11 @@ class Circuit extends AST{
             env.setVariable(output, false);
         }
 
-        // Evaluate all updates
+
         for (Update update : updates) {
             update.eval(env);
         }
 
-        // Print the environment
         System.out.println(env.toString());
     }
     public void nextCycle(Environment env, int cycle) {
@@ -198,17 +197,14 @@ class Circuit extends AST{
             }
         }
 
-        // Update latches for the next cycle
         for (Latch latch : latches) {
             latch.nextCycle(env);
         }
 
-        // Evaluate all updates for the new cycle
         for (Update update : updates) {
             update.eval(env);
         }
 
-        // Print the environment
         System.out.println(env.toString());
     }
 
