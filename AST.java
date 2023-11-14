@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public abstract class AST {
     public void error(String msg) {
@@ -9,10 +10,10 @@ public abstract class AST {
 };
 
 /* Expressions are similar to arithmetic expressions in the impl
-   language: the atomic expressions are just Signal (similar to
-   variables in expressions) and they can be composed to larger
-   expressions with And (Conjunction), Or (Disjunction), and
-   Not (Negation) */
+language: the atomic expressions are just Signal (similar to
+variables in expressions) and they can be composed to larger
+expressions with And (Conjunction), Or (Disjunction), and
+Not (Negation) */
 
 abstract class Expr extends AST {
     abstract public Boolean eval(Environment env);
@@ -57,7 +58,7 @@ class Negation extends Expr {
 }
 
 class Signal extends Expr {
-    String varname; // a signal is just identified by a name 
+    String varname; // a signal is just identified by a name
 
     Signal(String varname) {
         this.varname = varname;
@@ -121,7 +122,7 @@ class Update extends AST {
    input signals of the circuit. It is suggested to use this class
    also for the output signals of the circuit in the second
    assignment.
-*/
+   */
 
 class Trace extends AST {
     String signal;
@@ -130,6 +131,15 @@ class Trace extends AST {
     Trace(String signal, Boolean[] values) {
         this.signal = signal;
         this.values = values;
+    }
+
+    Trace(String signal, int n) {
+        this.signal = signal;
+        this.values = new Boolean[n];
+    }
+
+    void updateTrace(int n, Boolean value) {
+        values[n - 1] = value;
     }
 
     public String toString() {
@@ -149,12 +159,12 @@ class Trace extends AST {
 /* The main data structure of this simulator: the entire circuit with
    its inputs, outputs, latches, and updates. Additionally for each
    input signal, it has a Trace as simulation input. 
-   
+
    There are two variables that are not part of the abstract syntax
    and thus not initialized by the constructor (so far): simoutputs
    and simlength. It is suggested to use them for assignment 2 to
    implement the interpreter:
- 
+
    1. to have simlength as the length of the traces in siminputs. (The
    simulator should check they have all the same length and stop with
    an error otherwise.) Now simlength is the number of simulation
@@ -163,7 +173,7 @@ class Trace extends AST {
    2. to store in simoutputs the value of the output signals in each
    simulation cycle, so they can be displayed at the end. These traces
    should also finally have the length simlength.
-*/
+   */
 
 class Circuit extends AST {
     String name;
@@ -182,6 +192,7 @@ class Circuit extends AST {
         this.latches = latches;
         this.updates = updates;
         this.siminputs = siminputs;
+        this.simoutputs = new ArrayList<>();
     }
 
     public void initialize(Environment env) {
@@ -227,8 +238,6 @@ class Circuit extends AST {
         for (Update update : updates) {
             update.eval(env);
         }
-
-//        System.out.println(env.toString());
     }
 
     public void runSimulator(Environment env) {
@@ -237,13 +246,26 @@ class Circuit extends AST {
         int n = siminputs.isEmpty() ? 0 : siminputs.get(0).values.length;
 
         List<Environment> envHistory = new ArrayList<>();
-        for (int i = 1; i < n; i++) {
-            nextCycle(env, i);
-            Environment prevEnv = env.cloneThis();
-            envHistory.add(prevEnv);
-        }
-        String signals = Environment.prettyString(envHistory, n- 1);
-        System.out.println(signals);
-    }
 
+        for (Map.Entry<String, Boolean> entry : env.values.entrySet()) {
+            simoutputs.add(new Trace(entry.getKey(), n));
+        }
+        for (int i = 1; i < n; i++) {
+            for (Trace t : simoutputs) {
+                Boolean b = env.values.get(t.signal);
+                t.updateTrace(i, b);
+            }
+            nextCycle(env, i);
+        }
+        for (Trace t : simoutputs) {
+            Boolean b = env.values.get(t.signal);
+            t.updateTrace(n, b);
+        }
+        for (Trace t : simoutputs) {
+            for (Boolean b : t.values) {
+                System.out.print(b ? "1" : "0");
+            }
+            System.out.println(" " + t.signal);
+        }
+    }
 }
