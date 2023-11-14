@@ -1,9 +1,10 @@
+import java.util.ArrayList;
 import java.util.List;
 
-public abstract class AST{
-    public void error(String msg){
-	System.err.println(msg);
-	System.exit(-1);
+public abstract class AST {
+    public void error(String msg) {
+        System.err.println(msg);
+        System.exit(-1);
     }
 };
 
@@ -13,38 +14,54 @@ public abstract class AST{
    expressions with And (Conjunction), Or (Disjunction), and
    Not (Negation) */
 
-abstract class Expr extends AST{
+abstract class Expr extends AST {
     abstract public Boolean eval(Environment env);
 }
 
-class Conjunction extends Expr{
-    Expr e1,e2;
-    Conjunction(Expr e1,Expr e2){this.e1=e1; this.e2=e2;}
+class Conjunction extends Expr {
+    Expr e1, e2;
+
+    Conjunction(Expr e1, Expr e2) {
+        this.e1 = e1;
+        this.e2 = e2;
+    }
 
     public Boolean eval(Environment env) {
-    return e1.eval(env) && e2.eval(env);
+        return e1.eval(env) && e2.eval(env);
     }
 }
 
-class Disjunction extends Expr{
-    Expr e1,e2;
-    Disjunction(Expr e1,Expr e2){this.e1=e1; this.e2=e2;}
+class Disjunction extends Expr {
+    Expr e1, e2;
+
+    Disjunction(Expr e1, Expr e2) {
+        this.e1 = e1;
+        this.e2 = e2;
+    }
+
     public Boolean eval(Environment env) {
         return e1.eval(env) || e2.eval(env);
     }
 }
 
-class Negation extends Expr{
+class Negation extends Expr {
     Expr e;
-    Negation(Expr e){this.e=e;}
+
+    Negation(Expr e) {
+        this.e = e;
+    }
+
     public Boolean eval(Environment env) {
         return !e.eval(env);
     }
 }
 
-class Signal extends Expr{
+class Signal extends Expr {
     String varname; // a signal is just identified by a name 
-    Signal(String varname){this.varname=varname;}
+
+    Signal(String varname) {
+        this.varname = varname;
+    }
 
     public Boolean eval(Environment env) {
         return env.getVariable(varname);
@@ -53,22 +70,25 @@ class Signal extends Expr{
 
 // Latches have an input and output signal
 
-class Latch extends AST{
+class Latch extends AST {
     String inputname;
     String outputname;
-    Latch(String inputname, String outputname){
-	this.inputname=inputname;
-	this.outputname=outputname;
+
+    Latch(String inputname, String outputname) {
+        this.inputname = inputname;
+        this.outputname = outputname;
     }
-    public void initialize(Environment env){
+
+    public void initialize(Environment env) {
         env.setVariable(outputname, false);
     }
-    public void nextCycle(Environment env){
+
+    public void nextCycle(Environment env) {
         Boolean inputValue = env.getVariable(inputname);
-        if (inputValue != null){
+        if (inputValue != null) {
             env.setVariable(outputname, inputValue);
         } else {
-            error("Variable not defined: "+inputname);
+            error("Variable not defined: " + inputname);
         }
     }
 }
@@ -76,18 +96,22 @@ class Latch extends AST{
 // An Update is any of the lines " signal = expression "
 // in the .update section
 
-class Update extends AST{
+class Update extends AST {
     String name;
     Expr e;
-    Update(String name, Expr e){this.e=e; this.name=name;}
 
-    public void eval(Environment env){
+    Update(String name, Expr e) {
+        this.e = e;
+        this.name = name;
+    }
+
+    public void eval(Environment env) {
         env.setVariable(name, e.eval(env));
 
         if (env.hasVariable(name)) {
             env.setVariable(name, e.eval(env));
         } else {
-            error("Variable not defined: "+name);
+            error("Variable not defined: " + name);
         }
     }
 }
@@ -99,12 +123,13 @@ class Update extends AST{
    assignment.
 */
 
-class Trace extends AST{
+class Trace extends AST {
     String signal;
     Boolean[] values;
-    Trace(String signal, Boolean[] values){
-	this.signal=signal;
-	this.values=values;
+
+    Trace(String signal, Boolean[] values) {
+        this.signal = signal;
+        this.values = values;
     }
 
     public String toString() {
@@ -140,28 +165,25 @@ class Trace extends AST{
    should also finally have the length simlength.
 */
 
-class Circuit extends AST{
-    String name; 
+class Circuit extends AST {
+    String name;
     List<String> inputs;
     List<String> outputs;
-    List<Latch>  latches;
+    List<Latch> latches;
     List<Update> updates;
-    List<Trace>  siminputs;
-    List<Trace>  simoutputs;
+    List<Trace> siminputs;
+    List<Trace> simoutputs;
     int simlength;
-    Circuit(String name,
-	    List<String> inputs,
-	    List<String> outputs,
-	    List<Latch>  latches,
-	    List<Update> updates,
-	    List<Trace>  siminputs){
-	this.name=name;
-	this.inputs=inputs;
-	this.outputs=outputs;
-	this.latches=latches;
-	this.updates=updates;
-	this.siminputs=siminputs;
+
+    Circuit(String name, List<String> inputs, List<String> outputs, List<Latch> latches, List<Update> updates, List<Trace> siminputs) {
+        this.name = name;
+        this.inputs = inputs;
+        this.outputs = outputs;
+        this.latches = latches;
+        this.updates = updates;
+        this.siminputs = siminputs;
     }
+
     public void initialize(Environment env) {
         // Initialize input signals
         for (Trace input : siminputs) {
@@ -187,6 +209,7 @@ class Circuit extends AST{
 
         System.out.println(env.toString());
     }
+
     public void nextCycle(Environment env, int cycle) {
         // Check for each input signal at the current cycle
         for (Trace input : siminputs) {
@@ -205,7 +228,7 @@ class Circuit extends AST{
             update.eval(env);
         }
 
-        System.out.println(env.toString());
+//        System.out.println(env.toString());
     }
 
     public void runSimulator(Environment env) {
@@ -213,9 +236,14 @@ class Circuit extends AST{
 
         int n = siminputs.isEmpty() ? 0 : siminputs.get(0).values.length;
 
+        List<Environment> envHistory = new ArrayList<>();
         for (int i = 1; i < n; i++) {
             nextCycle(env, i);
+            Environment prevEnv = env.cloneThis();
+            envHistory.add(prevEnv);
         }
+        String signals = Environment.prettyString(envHistory, n- 1);
+        System.out.println(signals);
     }
 
 }
