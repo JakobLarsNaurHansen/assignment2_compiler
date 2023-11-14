@@ -193,6 +193,13 @@ class Circuit extends AST {
         this.updates = updates;
         this.siminputs = siminputs;
         this.simoutputs = new ArrayList<>();
+
+        simlength = siminputs.get(0).values.length;
+
+        for (String out : outputs) {
+            simoutputs.add(new Trace(out, new Boolean[simlength]));
+        }
+
     }
 
     public void initialize(Environment env) {
@@ -209,13 +216,14 @@ class Circuit extends AST {
         for (Latch latch : latches) {
             latch.initialize(env);
         }
-        for (String output : outputs) {
-            env.setVariable(output, false);
-        }
 
 
         for (Update update : updates) {
             update.eval(env);
+        }
+
+        for (Trace output : simoutputs) {
+            output.values[0] = env.getVariable(output.signal);
         }
 
         System.out.println(env.toString());
@@ -238,6 +246,10 @@ class Circuit extends AST {
         for (Update update : updates) {
             update.eval(env);
         }
+
+        for (Trace output : simoutputs) {
+            output.values[cycle] = env.getVariable(output.signal);
+        }
     }
 
     public void runSimulator(Environment env) {
@@ -245,21 +257,15 @@ class Circuit extends AST {
 
         int n = siminputs.isEmpty() ? 0 : siminputs.get(0).values.length;
 
-        List<Environment> envHistory = new ArrayList<>();
-
-        for (Map.Entry<String, Boolean> entry : env.values.entrySet()) {
-            simoutputs.add(new Trace(entry.getKey(), n));
-        }
         for (int i = 1; i < n; i++) {
-            for (Trace t : simoutputs) {
-                Boolean b = env.values.get(t.signal);
-                t.updateTrace(i, b);
-            }
             nextCycle(env, i);
         }
-        for (Trace t : simoutputs) {
-            Boolean b = env.values.get(t.signal);
-            t.updateTrace(n, b);
+
+        for (Trace t : siminputs) {
+            for (Boolean b : t.values) {
+                System.out.print(b ? "1" : "0");
+            }
+            System.out.println(" " + t.signal);
         }
         for (Trace t : simoutputs) {
             for (Boolean b : t.values) {
