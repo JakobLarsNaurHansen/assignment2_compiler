@@ -82,6 +82,8 @@ class Update extends AST{
     Update(String name, Expr e){this.e=e; this.name=name;}
 
     public void eval(Environment env){
+        env.setVariable(name, e.eval(env));
+
         if (env.hasVariable(name)) {
             env.setVariable(name, e.eval(env));
         } else {
@@ -173,6 +175,9 @@ class Circuit extends AST{
         // Initialize all latches
         for (Latch latch : latches) {
             latch.initialize(env);
+        }
+        for (String output : outputs) {
+            env.setVariable(output, false);
         }
 
         // Evaluate all updates
