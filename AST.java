@@ -133,15 +133,6 @@ class Trace extends AST {
         this.values = values;
     }
 
-    Trace(String signal, int n) {
-        this.signal = signal;
-        this.values = new Boolean[n];
-    }
-
-    void updateTrace(int n, Boolean value) {
-        values[n - 1] = value;
-    }
-
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
@@ -226,8 +217,6 @@ class Circuit extends AST {
             output.values[0] = env.getVariable(output.signal);
         }
 
-        System.out.println("<h2>Initial Values</h2>");
-        System.out.println(env.toString());
 
     }
 
@@ -254,27 +243,29 @@ class Circuit extends AST {
         }
     }
 
-    public void runSimulator(Environment env) {
+    public String runSimulator(Environment env) {
         initialize(env);
-
+        StringBuilder result = new StringBuilder();
+        result.append("<h2>Initial Values</h2>").append(env.toString());
         int n = siminputs.isEmpty() ? 0 : siminputs.get(0).values.length;
 
         for (int i = 1; i < n; i++) {
             nextCycle(env, i);
         }
 
-        System.out.println("\n<h2>Simulation</h2>\n");
+        result.append("\n<h2>Simulation</h2>\n");
         for (Trace t : siminputs) {
             for (Boolean b : t.values) {
-                System.out.print(b ? "1" : "0");
+                result.append(b ? "1" : "0");
             }
-            System.out.println(" " + t.signal + "<br>");
+            result.append(" ").append(t.signal).append("<br>\n");
         }
         for (Trace t : simoutputs) {
             for (Boolean b : t.values) {
-                System.out.print(b ? "1" : "0");
+                result.append(b ? "1" : "0");
             }
-            System.out.println(" " + t.signal + "<br>");
+            result.append(" ").append(t.signal).append("<br>\n");
         }
+        return result.toString();
     }
 }

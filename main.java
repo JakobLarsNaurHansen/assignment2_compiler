@@ -39,8 +39,7 @@ public class main {
         ParseTree parseTree = parser.start();
 
         // The JaxMaker is a visitor that produces html/jax output as a string
-        String result = new JaxMaker().visit(parseTree);
-        System.out.println("\n\n\n" + result);
+        String result = new JaxMaker().visit(parseTree) + "\n";
 
 	/* The AstMaker generates the abstract syntax to be used for
 	   the second assignment, where for the start symbol of the
@@ -59,9 +58,10 @@ public class main {
         Environment env = new Environment();
 
         // Run the simulation
-        p.runSimulator(env);
+        result += p.runSimulator(env) + "\n";
 
-        System.out.println("\n</body></html>\n");
+        result += "\n</body></html>\n";
+        System.out.println(result);
 
 
     }
@@ -72,75 +72,66 @@ public class main {
 class JaxMaker extends AbstractParseTreeVisitor<String> implements hwVisitor<String> {
 
     public String visitStart(hwParser.StartContext ctx) {
-        //
-        String result = "<!DOCTYPE html>\n" + "<html><head><title> " + ctx.name.getText() + "</title>\n" + "<script src=\"https://polyfill.io/v3/polyfill.min.js?features=es6\"></script>\n" + "<script type=\"text/javascript\" id=\"MathJax-script\" async src=\"https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js\">\n" + "</script></head><body>\n";
-        result += "<h1>" + ctx.name.getText() + "</h1>\n" + "<h2> Inputs </h2>\n";
+        // add css here if you want.
+        String css = "body{max-width:600px; margin:auto;}";
+        StringBuilder result = new StringBuilder("<!DOCTYPE html>\n" + "<html><head><title> " + ctx.name.getText() + "</title>\n<style>" + css + "</style>" + "<script src=\"https://polyfill.io/v3/polyfill.min.js?features=es6\"></script>\n" + "<script type=\"text/javascript\" id=\"MathJax-script\" async src=\"https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js\">\n" + "</script></head><body>\n");
+        result.append("<h1>").append(ctx.name.getText()).append("</h1>\n").append("<h2>Inputs</h2>\n");
 
         for (Token t : ctx.ins) {
-            result += t.getText() + " ";
+            result.append(t.getText()).append(" ");
         }
 
-        result += "\n <h2> Outputs </h2>\n ";
+        result.append("\n<h2>Outputs</h2>\n");
         for (Token t : ctx.outs) {
-            result += t.getText() + " ";
+            result.append(t.getText()).append(" ");
         }
 
-        result += "\n <h2> Latches </h2>\n";
+        result.append("\n<h2>Latches</h2>\n");
 
         for (hwParser.LatchdeclContext t : ctx.ls) {
-            result += visit(t);
+            result.append(visit(t));
         }
 
-        result += "\n <h2> Updates </h2>\n";
+        result.append("\n<h2>Updates</h2>\n");
 
         for (hwParser.UpdatedeclContext t : ctx.up) {
-            result += visit(t);
+            result.append(visit(t));
         }
 
-        result += "\n <h2>Simulation inputs</h2>\n";
+        result.append("\n<h2>Simulation inputs</h2>\n");
         for (hwParser.SimInpContext t : ctx.simin)
-            result += visit(t);
+            result.append(visit(t));
 
-        return result;
+        return result.toString();
     }
-
-    ;
 
     public String visitSimInp(hwParser.SimInpContext ctx) {
         return ctx.str.getText() + " <b>" + ctx.in.getText() + "</b><br>\n";
     }
 
     public String visitLatchdecl(hwParser.LatchdeclContext ctx) {
-        return ctx.in.getText() + "&rarr;" + ctx.out.getText() + "<br>\n";
+        return ctx.in.getText() + " &rarr; " + ctx.out.getText() + "<br>\n";
     }
 
     public String visitUpdatedecl(hwParser.UpdatedeclContext ctx) {
-        return ctx.write.getText() + "&larr;\\(" + visit(ctx.e) + "\\)<br>\n";
+        return ctx.write.getText() + " &larr; \\(" + visit(ctx.e) + "\\)<br>\n";
     }
 
     public String visitSignal(hwParser.SignalContext ctx) {
         return "\\mathrm{" + ctx.x.getText() + "}";
     }
 
-    ;
-
     public String visitConjunction(hwParser.ConjunctionContext ctx) {
         return "(" + visit(ctx.e1) + "\\wedge" + visit(ctx.e2) + ")";
     }
-
-    ;
 
     public String visitDisjunction(hwParser.DisjunctionContext ctx) {
         return "(" + visit(ctx.e1) + "\\vee" + visit(ctx.e2) + ")";
     }
 
-    ;
-
     public String visitNegation(hwParser.NegationContext ctx) {
         return "\\neg(" + visit(ctx.e) + ")";
     }
-
-    ;
 
     public String visitParenthesis(hwParser.ParenthesisContext ctx) {
         return visit(ctx.e);
@@ -175,8 +166,6 @@ class AstMaker extends AbstractParseTreeVisitor<AST> implements hwVisitor<AST> {
         return new Circuit(ctx.name.getText(), ins, outs, latches, updates, siminp);
     }
 
-    ;
-
     public AST visitSimInp(hwParser.SimInpContext ctx) {
         String s = ctx.str.getText();
         // s is a string consisting of characters '0' and '1' (not numbers!)
@@ -202,25 +191,17 @@ class AstMaker extends AbstractParseTreeVisitor<AST> implements hwVisitor<AST> {
         return new Signal(ctx.x.getText());
     }
 
-    ;
-
     public AST visitConjunction(hwParser.ConjunctionContext ctx) {
         return new Conjunction((Expr) visit(ctx.e1), (Expr) visit(ctx.e2));
     }
-
-    ;
 
     public AST visitDisjunction(hwParser.DisjunctionContext ctx) {
         return new Disjunction((Expr) visit(ctx.e1), (Expr) visit(ctx.e2));
     }
 
-    ;
-
     public AST visitNegation(hwParser.NegationContext ctx) {
         return new Negation((Expr) visit(ctx.e));
     }
-
-    ;
 
     public AST visitParenthesis(hwParser.ParenthesisContext ctx) {
         return visit(ctx.e);
