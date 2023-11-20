@@ -31,7 +31,7 @@ class Environment {
     public String toString() {
         String table = "";
         for (Entry<String, Boolean> entry : values.entrySet()) {
-            table += entry.getKey() + "\t-> " + entry.getValue() + "\n";
+            table += entry.getKey() + "\t-> " + entry.getValue() + "<br>\n";
         }
         return table;
     }

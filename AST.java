@@ -226,7 +226,9 @@ class Circuit extends AST {
             output.values[0] = env.getVariable(output.signal);
         }
 
+        System.out.println("<h2>Initial Values</h2>");
         System.out.println(env.toString());
+
     }
 
     public void nextCycle(Environment env, int cycle) {
@@ -261,17 +263,18 @@ class Circuit extends AST {
             nextCycle(env, i);
         }
 
+        System.out.println("\n<h2>Simulation</h2>\n");
         for (Trace t : siminputs) {
             for (Boolean b : t.values) {
                 System.out.print(b ? "1" : "0");
             }
-            System.out.println(" " + t.signal);
+            System.out.println(" " + t.signal + "<br>");
         }
         for (Trace t : simoutputs) {
             for (Boolean b : t.values) {
                 System.out.print(b ? "1" : "0");
             }
-            System.out.println(" " + t.signal);
+            System.out.println(" " + t.signal + "<br>");
         }
     }
 }

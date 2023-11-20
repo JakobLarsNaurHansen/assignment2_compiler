@@ -61,6 +61,8 @@ public class main {
         // Run the simulation
         p.runSimulator(env);
 
+        System.out.println("\n</body></html>\n");
+
 
     }
 }
@@ -95,18 +97,17 @@ class JaxMaker extends AbstractParseTreeVisitor<String> implements hwVisitor<Str
             result += visit(t);
         }
 
-        result += "\n <h2> Simulation inputs </h2>\n";
+        result += "\n <h2>Simulation inputs</h2>\n";
         for (hwParser.SimInpContext t : ctx.simin)
             result += visit(t);
 
-        result += "\n</body></html>\n";
         return result;
     }
 
     ;
 
     public String visitSimInp(hwParser.SimInpContext ctx) {
-        return "<b>" + ctx.in.getText() + "</b>: " + ctx.str.getText() + "<br>\n";
+        return ctx.str.getText() + " <b>" + ctx.in.getText() + "</b><br>\n";
     }
 
     public String visitLatchdecl(hwParser.LatchdeclContext ctx) {
@@ -222,7 +223,7 @@ class AstMaker extends AbstractParseTreeVisitor<AST> implements hwVisitor<AST> {
     ;
 
     public AST visitParenthesis(hwParser.ParenthesisContext ctx) {
-        return (Expr) visit(ctx.e);
+        return visit(ctx.e);
     }
 
 }
