@@ -1,6 +1,8 @@
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
+
 
 public abstract class AST {
     public void error(String msg) {
@@ -194,6 +196,7 @@ class Circuit extends AST {
     }
 
     public void initialize(Environment env) {
+        validateSignalDeclarations();
         // Initialize input signals
         for (Trace input : siminputs) {
             if (input.values == null || input.values.length == 0) {
@@ -267,5 +270,31 @@ class Circuit extends AST {
             result.append(" ").append(t.signal).append("<br>\n");
         }
         return result.toString();
+    }
+    private void validateSignalDeclarations() {
+        Map<String, String> signalTypes = new HashMap<>();
+
+        // Populate the map with input signals
+        for (String inputSignal : inputs) {
+            signalTypes.put(inputSignal, "input");
+        }
+
+        // Check and add latch outputs
+        for (Latch latch : latches) {
+            if (signalTypes.containsKey(latch.outputname)) {
+                error("Signal declared in multiple sections: " + latch.outputname);
+            } else {
+                signalTypes.put(latch.outputname, "latch_output");
+            }
+        }
+
+        // Check and add update outputs
+        for (Update update : updates) {
+            if (signalTypes.containsKey(update.name)) {
+                error("Signal declared in multiple sections: " + update.name);
+            } else {
+                signalTypes.put(update.name, "update_output");
+            }
+        }
     }
 }
