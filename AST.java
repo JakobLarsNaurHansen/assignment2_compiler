@@ -201,6 +201,7 @@ class Circuit extends AST {
 
     public void initialize(Environment env) {
         validateSignalDeclarations();
+        validateSimulationSection();
 
         // Process input signals
         processSection(inputs);  // Adding input signals to allowed set
@@ -327,5 +328,29 @@ class Circuit extends AST {
 
         allowedSignalsForUpdates.add(update.name);
     }
+    public void validateSimulationSection() {
+        for (String inputSignal : inputs) {
+            Trace inputTrace = null;
+            for (Trace trace : siminputs) {
+                if (trace.signal.equals(inputSignal)) {
+                    inputTrace = trace;
+                    break;
+                }
+            }
 
+            if (inputTrace == null) {
+                error("No simulation data found for input signal: " + inputSignal);
+            }
+
+            // Check the length of the sequence of Booleans
+            if (inputTrace.values.length == 0) {
+                error("Simulation data for input signal '" + inputSignal + "' has length 0.");
+            }
+
+            // Compare the length with the length of the first input signal
+            if (inputTrace.values.length != siminputs.get(0).values.length) {
+                error("Simulation data length for input signal '" + inputSignal + "' does not match other input signals.");
+            }
+        }
+    }
 }

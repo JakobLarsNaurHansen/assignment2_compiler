@@ -45,8 +45,9 @@ public class main {
 	   the second assignment, where for the start symbol of the
 	   ANTLR grammar, it generates an object of class Circuit (see
 	   AST.java). */
-
         Circuit p = (Circuit) new AstMaker().visit(parseTree);
+
+
 
 	/* For the second assignment you need to extend the classes of
 	    AST.java with some methods that correspond to running a
@@ -56,6 +57,8 @@ public class main {
 
         // Create an Environment object
         Environment env = new Environment();
+
+        p.validateSimulationSection();
 
         // Run the simulation
         result += p.runSimulator(env) + "\n";
