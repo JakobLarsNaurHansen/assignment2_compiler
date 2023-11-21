@@ -2,6 +2,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.stream.Collectors;
+
 
 
 public abstract class AST {
@@ -197,6 +201,10 @@ class Circuit extends AST {
 
     public void initialize(Environment env) {
         validateSignalDeclarations();
+
+        // Process input signals
+        processSection(inputs);  // Adding input signals to allowed set
+
         // Initialize input signals
         for (Trace input : siminputs) {
             if (input.values == null || input.values.length == 0) {
@@ -206,21 +214,24 @@ class Circuit extends AST {
             }
         }
 
+        // Process latch outputs and initialize latches
+        List<String> latchOutputs = latches.stream().map(latch -> latch.outputname).collect(Collectors.toList());
+        processSection(latchOutputs);  // Adding latch outputs to allowed set
 
         for (Latch latch : latches) {
             latch.initialize(env);
         }
 
-
+        // Validate and process updates
         for (Update update : updates) {
+            validateUpdate(update); // Validate update before execution
             update.eval(env);
         }
 
+        // Process output signals
         for (Trace output : simoutputs) {
             output.values[0] = env.getVariable(output.signal);
         }
-
-
     }
 
     public void nextCycle(Environment env, int cycle) {
@@ -297,4 +308,24 @@ class Circuit extends AST {
             }
         }
     }
+    private Set<String> allowedSignalsForUpdates = new HashSet<>();
+
+    // Call this method when processing inputs, latches, and updates
+    private void processSection(List<String> newSignals) {
+        allowedSignalsForUpdates.addAll(newSignals);
+    }
+
+    // Call this method for each update
+    private void validateUpdate(Update update) {
+        List<String> allowedSignals = new ArrayList<>(allowedSignalsForUpdates);
+
+        for ( String signal : allowedSignals) {
+            if (!allowedSignals.contains(signal)) {
+                error("Invalid signal reference in update: " + update.name);
+            }
+        }
+
+        allowedSignalsForUpdates.add(update.name);
+    }
+
 }
