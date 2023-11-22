@@ -5,6 +5,8 @@
     – the output of an update (i.e., as signal = ... in the .updates section)
 
 It is thus an error if a signal is neither of these nor more than one of these.
+
+There are three ways of getting errors. For third way to lines need to be uncommented.
 */
 .hardware error1
 
@@ -12,8 +14,8 @@ It is thus an error if a signal is neither of these nor more than one of these.
 .outputs Oscillator
 
 .latches
-Oscillator -> OscillatorM // Correct
-//Oscillator -> Reset // Error 1
+//Oscillator -> OscillatorM // Correct
+Oscillator -> Reset // Error 1
 //X -> Y // Error 3 together with bottom Error 3
 
 .update

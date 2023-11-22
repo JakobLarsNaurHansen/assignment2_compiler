@@ -26,6 +26,15 @@ run:	main.class
 	java $(classpathoption) main 03-trafiklys.hw  > 03.html
 	java $(classpathoption) main 04-von-Neumann.hw  > 04.html
 
+error1: main.class
+	java $(classpathoption) main 05-error1.hw
+
+error2: main.class
+	java $(classpathoption) main 06-error2.hw
+
+error3: main.class
+	java $(classpathoption) main 07-error3.hw
+
 grun:	hwLexer.class hwParser.class 01-hello-world.hw
 	$(grun) impl start -gui -tokens 01-hello-world.hw
 
