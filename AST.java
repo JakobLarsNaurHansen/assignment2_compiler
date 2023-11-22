@@ -7,13 +7,12 @@ import java.util.HashSet;
 import java.util.stream.Collectors;
 
 
-
 public abstract class AST {
     public void error(String msg) {
         System.err.println(msg);
         System.exit(-1);
     }
-};
+}
 
 /* Expressions are similar to arithmetic expressions in the impl
 language: the atomic expressions are just Signal (similar to
@@ -95,7 +94,7 @@ class Latch extends AST {
         if (inputValue != null) {
             env.setVariable(outputname, inputValue);
         } else {
-            error("Variable not defined: " + inputname);
+            error("Variable is not defined: " + inputname);
         }
     }
 }
@@ -118,7 +117,7 @@ class Update extends AST {
         if (env.hasVariable(name)) {
             env.setVariable(name, e.eval(env));
         } else {
-            error("Variable not defined: " + name);
+            error("Variable is not defined: " + name);
         }
     }
 }
@@ -283,6 +282,7 @@ class Circuit extends AST {
         }
         return result.toString();
     }
+
     private void validateSignalDeclarations() {
         Map<String, String> signalTypes = new HashMap<>();
 
@@ -309,7 +309,8 @@ class Circuit extends AST {
             }
         }
     }
-    private Set<String> allowedSignalsForUpdates = new HashSet<>();
+
+    private final Set<String> allowedSignalsForUpdates = new HashSet<>();
 
     // Call this method when processing inputs, latches, and updates
     private void processSection(List<String> newSignals) {
@@ -320,7 +321,7 @@ class Circuit extends AST {
     private void validateUpdate(Update update) {
         List<String> allowedSignals = new ArrayList<>(allowedSignalsForUpdates);
 
-        for ( String signal : allowedSignals) {
+        for (String signal : allowedSignals) {
             if (!allowedSignals.contains(signal)) {
                 error("Invalid signal reference in update: " + update.name);
             }
@@ -328,6 +329,7 @@ class Circuit extends AST {
 
         allowedSignalsForUpdates.add(update.name);
     }
+
     public void validateSimulationSection() {
         for (String inputSignal : inputs) {
             Trace inputTrace = null;
@@ -349,7 +351,7 @@ class Circuit extends AST {
 
             // Compare the length with the length of the first input signal
             if (inputTrace.values.length != siminputs.get(0).values.length) {
-                error("Simulation data length for input signal '" + inputSignal + "' does not match other input signals.");
+                error("Simulation data length for input signal '" + inputSignal + "' does not match previous input signal(s).");
             }
         }
     }

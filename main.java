@@ -8,6 +8,26 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+/*
+# Task 3
+
+1. Each signal is exactly one of the following:
+    – an input signal (i.e., declared in the .inputs section)
+    – the output of a latch (i.e., occurs as ... -> signal in the .latches section)
+    – the output of an update (i.e., as signal = ... in the .updates section)
+
+It is thus an error if a signal is neither of these nor more than one of these.
+
+2. The updates must not be cyclic, for example sig= !sig is not allowed because would mean connecting
+ a signal with its own negation. To make the detection of cyclic specifications easier we can
+make the following simpler requirement: the expression in every update may only use a signal if
+it is output of a previous update, an input signal, or output of a latch. Question: Why does this
+requirement prevent cyclic update specifications?
+
+3. For every input signal, the .simulation section specifies a sequence of Booleans and the sequence
+is of the same length for all input signals, and not of length 0.
+
+*/
 
 public class main {
     public static void main(String[] args) throws IOException {
@@ -147,23 +167,23 @@ class JaxMaker extends AbstractParseTreeVisitor<String> implements hwVisitor<Str
 class AstMaker extends AbstractParseTreeVisitor<AST> implements hwVisitor<AST> {
 
     public AST visitStart(hwParser.StartContext ctx) {
-        List<String> ins = new ArrayList<String>();
+        List<String> ins = new ArrayList<>();
         for (Token t : ctx.ins) {
             ins.add(t.getText());
         }
-        List<String> outs = new ArrayList<String>();
+        List<String> outs = new ArrayList<>();
         for (Token t : ctx.outs) {
             outs.add(t.getText());
         }
-        List<Latch> latches = new ArrayList<Latch>();
+        List<Latch> latches = new ArrayList<>();
         for (hwParser.LatchdeclContext t : ctx.ls) {
             latches.add((Latch) visit(t));
         }
-        List<Update> updates = new ArrayList<Update>();
+        List<Update> updates = new ArrayList<>();
         for (hwParser.UpdatedeclContext t : ctx.up) {
             updates.add((Update) visit(t));
         }
-        List<Trace> siminp = new ArrayList<Trace>();
+        List<Trace> siminp = new ArrayList<>();
         for (hwParser.SimInpContext t : ctx.simin)
             siminp.add((Trace) visit(t));
         return new Circuit(ctx.name.getText(), ins, outs, latches, updates, siminp);
@@ -171,7 +191,12 @@ class AstMaker extends AbstractParseTreeVisitor<AST> implements hwVisitor<AST> {
 
     public AST visitSimInp(hwParser.SimInpContext ctx) {
         String s = ctx.str.getText();
-        // s is a string consisting of characters '0' and '1' (not numbers!)
+        boolean isValid = s.matches("[01]+");
+        if (!isValid) {
+            System.err.println("Input must be only 0 or 1 of length > 0");
+            System.exit(-1);
+        }
+                // s is a string consisting of characters '0' and '1' (not numbers!)
         Boolean[] tr = new Boolean[s.length()];
         // for the simulation it is more convenient to work with
         // Booleans, so converting the string s to an array of

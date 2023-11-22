@@ -1,7 +1,5 @@
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map.Entry;
-import java.util.Objects;
 
 class Environment {
     HashMap<String, Boolean> values = new HashMap<>();
@@ -17,7 +15,7 @@ class Environment {
     public Boolean getVariable(String name) {
         Boolean value = values.get(name);
         if (value == null) {
-            System.err.println("Variable not defined: " + name);
+            System.err.println("Variable is undefined or incorrectly used: " + name);
             System.exit(-1);
         }
         return value;

@@ -1,0 +1,21 @@
+/*
+2. The updates must not be cyclic, for example sig= !sig is not allowed because would mean connecting
+ a signal with its own negation. To make the detection of cyclic specifications easier we can
+make the following simpler requirement: the expression in every update may only use a signal if
+it is output of a previous update, an input signal, or output of a latch. Question: Why does this
+requirement prevent cyclic update specifications?
+*/
+.hardware error2
+
+.inputs Reset
+.outputs Oscillator
+
+.latches
+Oscillator -> OscillatorM
+
+.update
+Oscillator = !Oscillator // Error
+
+.simulate
+Reset=0000100
+

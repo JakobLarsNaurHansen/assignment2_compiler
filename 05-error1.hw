@@ -1,0 +1,27 @@
+/*
+1. Each signal is exactly one of the following:
+    – an input signal (i.e., declared in the .inputs section)
+    – the output of a latch (i.e., occurs as ... -> signal in the .latches section)
+    – the output of an update (i.e., as signal = ... in the .updates section)
+
+It is thus an error if a signal is neither of these nor more than one of these.
+*/
+.hardware error1
+
+.inputs Reset
+.outputs Oscillator
+
+.latches
+Oscillator -> OscillatorM // Correct
+//Oscillator -> Reset // Error 1
+//X -> Y // Error 3 together with bottom Error 3
+
+.update
+
+Oscillator = !OscillatorM && !Reset // Correct
+//Reset = !OscillatorM && !Reset // Error 2
+//Y = !OscillatorM && !Reset // Error 3 together with top Error 3
+
+.simulate
+Reset=0000100
+
