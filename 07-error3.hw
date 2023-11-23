@@ -4,7 +4,7 @@
  a sequence of Booleans and the sequence is
   of the same length for all input signals, and not of length 0.
 */
-.hardware helloworld
+.hardware Error3
 
 .inputs Reset Reset2
 .outputs Oscillator
@@ -18,5 +18,5 @@ Oscillator = !OscillatorM && !Reset
 
 .simulate
 Reset=01
-Reset2=
+Reset2=010
 

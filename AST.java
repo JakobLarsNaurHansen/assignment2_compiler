@@ -143,7 +143,7 @@ class Trace extends AST {
 
         if (values != null) {
             for (Boolean value : values) {
-                sb.append(value ? "1" : "0").append(" ");
+                sb.append(value ? "1" : "0");
             }
         } else {
             sb.append("No values");
@@ -269,16 +269,10 @@ class Circuit extends AST {
 
         result.append("\n<h2>Simulation</h2>\n");
         for (Trace t : siminputs) {
-            for (Boolean b : t.values) {
-                result.append(b ? "1" : "0");
-            }
-            result.append(" ").append(t.signal).append("<br>\n");
+            result.append(t).append(" ").append(t.signal).append("<br>\n");
         }
         for (Trace t : simoutputs) {
-            for (Boolean b : t.values) {
-                result.append(b ? "1" : "0");
-            }
-            result.append(" ").append(t.signal).append("<br>\n");
+            result.append(t).append(" ").append(t.signal).append("<br>\n");
         }
         return result.toString();
     }
